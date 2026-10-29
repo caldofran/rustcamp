@@ -37,3 +37,29 @@ mod say_hi {
     impl SayHi for String {}
     impl SayHi for &[u8] {}
 }
+
+mod future {
+    use core::{future::Future, pin::Pin, todo};
+    use pin_project::pin_project;
+
+    #[pin_project]
+    struct MeasurableFuture<Fut: Future> {
+        #[pin]
+        inner_future: Fut,
+        started_at: Option<std::time::Instant>,
+    }
+
+    impl<Fut: Future> Future for MeasurableFuture<Fut> {
+        type Output = Fut::Output;
+
+        fn poll(
+            self: core::pin::Pin<&mut Self>,
+            cx: &mut core::task::Context<'_>,
+        ) -> core::task::Poll<Self::Output> {
+            let this = self.project();
+            let _: Pin<&mut T> = this.pinned; // Pinned reference to the field
+            let _: &mut U = this.unpinned; // Normal reference to the field
+            todo!()
+        }
+    }
+}
