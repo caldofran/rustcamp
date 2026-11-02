@@ -53,14 +53,14 @@ mod global_stack {
         use super::*;
 
         #[test]
-        fn test_stack_initialization() {
+        fn initialization() {
             let stack = GlobalStack::new(1);
             assert_eq!(stack.pop(), Some(1));
             assert_eq!(stack.pop(), None);
         }
 
         #[test]
-        fn test_stack_is_lifo() {
+        fn is_lifo() {
             let stack = GlobalStack::new(1);
             stack.push(2);
             stack.push(3);
@@ -72,7 +72,7 @@ mod global_stack {
         }
 
         #[test]
-        fn test_shared_references_can_mutate() {
+        fn shared_references_can_mutate() {
             let stack = GlobalStack::new(1);
             let reference1 = &stack;
             let reference2 = &stack;
@@ -86,7 +86,7 @@ mod global_stack {
         }
 
         #[test]
-        fn test_clone() {
+        fn clone() {
             let owner1 = GlobalStack::new(1);
             let owner2 = owner1.clone();
 
