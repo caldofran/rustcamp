@@ -38,6 +38,63 @@ mod say_hi {
     impl SayHi for &[u8] {}
 }
 
+mod mute_me_somehow {
+    use std::{pin::Pin, rc::Rc};
+
+    trait MutMeSomehow {
+        fn mut_me_somehow(self: Pin<&mut Self>) {}
+    }
+
+    impl MutMeSomehow for String {
+        fn mut_me_somehow(mut self: Pin<&mut Self>) {
+            self.push_str("mutated");
+        }
+    }
+
+    impl MutMeSomehow for &[u8] {
+        fn mut_me_somehow(self: Pin<&mut Self>) {
+            let sliced = self.get_mut();
+            *sliced = &[0; 10];
+        }
+    }
+
+    impl<T> MutMeSomehow for Vec<T> {
+        fn mut_me_somehow(self: Pin<&mut Self>) {}
+    }
+
+    impl<T> MutMeSomehow for Rc<T> {
+        fn mut_me_somehow(self: Pin<&mut Self>) {}
+    }
+
+    impl<T: Default> MutMeSomehow for Box<T> {
+        fn mut_me_somehow(self: Pin<&mut Self>) {
+            let boxed = self.get_mut();
+            **boxed = T::default();
+        }
+    }
+
+    #[cfg(test)]
+    mod test {
+        use std::pin::Pin;
+
+        use super::MutMeSomehow;
+
+        #[test]
+        fn mut_string() {
+            let mut sut = String::new();
+            Pin::new(&mut sut).mut_me_somehow();
+            assert_eq!(sut, "mutated");
+        }
+
+        #[test]
+        fn mut_slice_u8() {
+            let mut sut: &[u8] = &[1; 10];
+            Pin::new(&mut sut).mut_me_somehow();
+            assert_eq!(sut, &[0; 10]);
+        }
+    }
+}
+
 mod future {
     use core::{future::Future, pin::Pin, todo};
     use pin_project::pin_project;
