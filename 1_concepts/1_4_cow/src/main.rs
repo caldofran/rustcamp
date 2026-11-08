@@ -3,10 +3,18 @@ use core::{
     result::Result::{Err, Ok},
     todo,
 };
-use std::env;
+use std::{borrow::Cow, default, env};
 
 fn main() {
-    println!("Implement me!");
+    let args = conf_from_args();
+    let path: Cow<str> = match args {
+        Ok(Some(path)) => path.into(),
+        Ok(None) => match conf_from_env_var() {
+            Ok(Some(path)) => path.into(),
+            _ => "/etc/app/app.conf".into(),
+        },
+        Err(error) => panic!("Found error {}", error),
+    };
 }
 
 fn conf_from_args() -> Result<Option<String>, &'static str> {
@@ -25,6 +33,14 @@ fn conf_from_args() -> Result<Option<String>, &'static str> {
     Ok(None)
 }
 
-fn conf_from_env_var() -> Result<Option<String>, &'static str> {
-    env::var("APP_CONF").ok_or("Not valid Unicode")?
+fn conf_from_env_var() -> Result<Option<String>, String> {
+    env::var("APP_CONF")
+        .map(|var| {
+            if var.trim().is_empty() {
+                None
+            } else {
+                Some(var)
+            }
+        })
+        .map_err(|error| format!("Found error {}", error))
 }
